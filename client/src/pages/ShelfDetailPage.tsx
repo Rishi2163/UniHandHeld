@@ -3,25 +3,33 @@ import { ArrowLeft, Trash2, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation, useParams } from "wouter";
 import { CameraCapture } from "@/components/CameraCapture";
-
+import { fetchShelvesInPicklist } from "@/services/api";
 // Mock shelf data based on scanned barcode
-const mockShelfData = {
-  aisle: "15",
-  section: "006",
-  level: "A",
-  shelves: [
-    {
-      code: "SHELF_001",
-      skuCount: 5,
-      pendingQty: 120,
-    },
-    {
-      code: "SHELF_002",
-      skuCount: 3,
-      pendingQty: 80,
-    },
-  ],
-};
+// const mockShelfData = {
+//   aisle: "15",
+//   section: "006",
+//   level: "A",
+//   shelves: [
+//     {
+//       code: "SHELF_001",
+//       skuCount: 5,
+//       pendingQty: 120,
+//     },
+//     {
+//       code: "SHELF_002",
+//       skuCount: 3,
+//       pendingQty: 80,
+//     },
+//   ],
+// };
+
+interface ShelfItem {
+  code: string;
+  skuCount: number;
+  pendingQty: number;
+}
+
+
 
 export const ShelfDetailPage: React.FC = () => {
   const params = useParams();
@@ -38,6 +46,7 @@ export const ShelfDetailPage: React.FC = () => {
     null,
   );
   const [clearedShelves, setClearedShelves] = useState<string[]>([]);
+  const [mockShelfData, setMockShelfData] = useState<ShelfItem[]>([])
   const searchParams = new URLSearchParams(window.location.search);
   const shelfCode = searchParams.get("shelfCode");
   const shelfStatus = searchParams.get("status") === "true";
@@ -48,7 +57,20 @@ export const ShelfDetailPage: React.FC = () => {
       stopCamera();
     };
   }, []);
+  useEffect(()=>{
+    const retrieveShelves = async () => {
+      try {
+        const shelves = await fetchShelvesInPicklist(picklistId);
+        setMockShelfData(shelves);
+        console.log("Fetched shelves:", shelves);
+      } catch (error) {
+        console.error("Error fetching shelves:", error);
+      }
+    };
+    retrieveShelves();
+  },[shelfCode,])
 
+  console.log("here is my data",mockShelfData)
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -131,20 +153,18 @@ export const ShelfDetailPage: React.FC = () => {
   }
 
     stopCamera();
-    setLocation(`/sku-scanner/TOTE_01?shelfCode=${shelfCode}&status=${shelfStatus}`);
+    setLocation(`/sku-scanner/TOTE_01?picklistId=${picklistId}&shelfCode=${shelfCode}&status=${shelfStatus}`);
   };
 
   const toggleSort = () => {
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
-  const sortedShelves = [...mockShelfData.shelves].sort((a, b) => {
-    if (sortOrder === "asc") {
-      return a.code.localeCompare(b.code);
-    } else {
-      return b.code.localeCompare(a.code);
-    }
-  });
+  const sortedShelves = [...mockShelfData].sort((a, b) => {
+  return sortOrder === "asc"
+    ? a.shelfCode.localeCompare(b.shelfCode)
+    : b.shelfCode.localeCompare(a.shelfCode);
+});
 
   return (
     <div className="bg-white min-h-screen w-full">
@@ -301,12 +321,12 @@ export const ShelfDetailPage: React.FC = () => {
             <button
               key={shelf.code}
               className="w-full bg-white border-b border-gray-200 p-4 hover:bg-gray-50 transition-colors text-left"
-              onClick={() => handleShelfClick(shelf.code,false)}
+              onClick={() => handleShelfClick(shelf.shelfCode,false)}
             >
               <div className="flex justify-between items-center">
                 <div>
                   <div className="text-lg font-semibold text-gray-900 mb-1">
-                    {shelf.code}
+                    {shelf.shelfCode}
                   </div>
                   <div className="text-gray-500 text-sm">
                     SKU Count{" "}

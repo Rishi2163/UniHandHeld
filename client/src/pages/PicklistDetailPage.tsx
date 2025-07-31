@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowLeft, MoreVertical, MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import {
 import { useLocation, useParams } from "wouter";
 import { SideNavigation } from "@/components/SideNavigation";
 import { BarcodeModeProvider, useBarcodeMode } from "@/contexts/BarcodeModeContext";
+import { fetchShelvesInPicklist } from "@/services/api";
 
 interface ShelfItem {
   id: string;
@@ -35,16 +36,29 @@ export const PicklistDetailPage: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [isSectionDialogOpen, setIsSectionDialogOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState<string>("Section A");
+  const [pendingShelves,setPendingShelves] = useState<ShelfItem[]>([])
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
   const { isBarcodeMode } = useBarcodeMode(); 
 
+  const {id} = useParams()
+
   // Sample shelf data
-  const pendingShelves: ShelfItem[] = [
-    { id: "1", shelfCode: "SHELF_001", skuCount: 5, pendingQty: 120 },
-    { id: "2", shelfCode: "SHELF_002", skuCount: 3, pendingQty: 80 },
-    { id: "3", shelfCode: "SHELF_003", skuCount: 3, pendingQty: 50 },
-    { id: "4", shelfCode: "SHELF_004", skuCount: 3, pendingQty: 50 },
-  ];
+  useEffect(() => {
+    const fetchPendingShelves = async () => {
+      try {
+        const response = await fetchShelvesInPicklist(id?.toString() || "");
+        if (response) {
+          setPendingShelves(response);
+        }
+      } catch (error) {
+        console.error("Error fetching pending shelves:", error);
+      }
+    };
+    fetchPendingShelves();
+  }, [id]);
+
+  console.log("here is the data", pendingShelves[0]
+);
 
   const scannedShelves: ShelfItem[] = [];
 
@@ -67,6 +81,7 @@ export const PicklistDetailPage: React.FC = () => {
     }
   });
 
+  //begin from here
   const handleBack = () => {
     setLocation("/b2b-packing");
   };

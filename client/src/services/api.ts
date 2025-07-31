@@ -19,13 +19,15 @@ export const fetchPicklistById = async (picklistId: string) => {
 };
 
 // Get shelf by ID within a picklist
-export const fetchShelfInPicklist = async (picklistId: string, shelfId: string) => {
-  const picklist = await fetchPicklistById(picklistId);
-  return picklist?.shelfItems.find((shelf:any) => shelf.id === shelfId);
+export const fetchShelvesInPicklist = async (picklistCode: string) => {
+  const picklists = await fetchAllPicklists();
+  const found = picklists.find((item: any) => item.picklistCode === picklistCode);
+  return found?.shelfItems || []; // ⬅ return shelfItems directly
 };
 
-export const fetchSKUItemsFromShelf = async (picklistId: string, shelfId: string) => {
-  const picklist = await fetchPicklistById(picklistId);
-  const shelf = picklist?.shelfItems.find((shelf:any) => shelf.id === shelfId);
-  return shelf?.skuInputProducts || [];
+
+export const fetchSKUItemsFromShelf = async (picklistId:any,shelfId: string) => {
+  const shelfItems = await fetchShelvesInPicklist(picklistId);
+  const skuItems = shelfItems.filter((item:any)=> item.shelfCode === shelfId);
+  return skuItems;
 };

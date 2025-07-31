@@ -23,7 +23,7 @@
  * Each picking list contains: code, items, priority, customer, fulfillment dates
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { MenuIcon, Filter, ArrowUpDown, X, ChevronDown, Calendar } from "lucide-react"; // Icons for UI actions
 import { Button } from "@/components/ui/button"; // Reusable button component
 import { Card, CardContent } from "@/components/ui/card"; // Card layout components
@@ -33,6 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useLocation } from "wouter"; // For navigation between pages
 import { SideNavigation } from "@/components/SideNavigation"; // Navigation menu component
 import { useBarcodeMode } from "@/contexts/BarcodeModeContext"; // Global barcode mode state
+import { fetchAllPicklists } from "@/services/api";
 
 interface PicklistItem {
   id: string;
@@ -57,6 +58,8 @@ interface FilterState {
   channel: string;
 }
 
+
+
 export const B2BPackingPage: React.FC = () => {
   const [, setLocation] = useLocation();
   const [assignToMe, setAssignToMe] = useState(false);
@@ -65,6 +68,7 @@ export const B2BPackingPage: React.FC = () => {
   const { isBarcodeMode } = useBarcodeMode();
   const [picklistCode, setPicklistCode] = useState("");
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
+  const [picklists, setPicklists] = useState<any[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState<FilterState>({
@@ -77,15 +81,19 @@ export const B2BPackingPage: React.FC = () => {
     channel: ""
   });
 
-  // Sample picklist data
-  const allPicklistItems: PicklistItem[] = [
-    { id: "1", picklistCode: "PL001-WH", pendingQuantity: 25, pendingSection: 5, channel: "Online", customer: "TechCorp Ltd", sku: "SK001", fulfillmentTAT: "18/02/2023 - 18/02/2023", order: "ORD001", paymentMethod: "Credit Card" },
-    { id: "2", picklistCode: "PL002-USB", pendingQuantity: 50, pendingSection: 12, channel: "Retail", customer: "ElectroMax", sku: "SK002", fulfillmentTAT: "19/02/2023 - 19/02/2023", order: "ORD002", paymentMethod: "Cash" },
-    { id: "3", picklistCode: "PL003-LS", pendingQuantity: 15, pendingSection: 3, channel: "Online", customer: "OfficeSupply Co", sku: "SK003", fulfillmentTAT: "20/02/2023 - 20/02/2023", order: "ORD003", paymentMethod: "Debit Card" },
-    { id: "4", picklistCode: "PL004-BM", pendingQuantity: 30, pendingSection: 8, channel: "B2B", customer: "Corporate Solutions", sku: "SK004", fulfillmentTAT: "21/02/2023 - 21/02/2023", order: "ORD004", paymentMethod: "Bank Transfer" },
-    { id: "5", picklistCode: "PL005-PC", pendingQuantity: 40, pendingSection: 15, channel: "Retail", customer: "Mobile World", sku: "SK005", fulfillmentTAT: "22/02/2023 - 22/02/2023", order: "ORD005", paymentMethod: "Credit Card" },
-    { id: "6", picklistCode: "AL001-TEST", pendingQuantity: 35, pendingSection: 7, channel: "Online", customer: "Alpha Corp", sku: "SK006", fulfillmentTAT: "23/02/2023 - 23/02/2023", order: "ORD006", paymentMethod: "PayPal" },
-  ];
+    useEffect(() => {
+    const loadPicklists = async () => {
+      try {
+        const data = await fetchAllPicklists();
+        setPicklists(data); // Save the data in state
+      } catch (error) {
+        console.error("Failed to fetch picklists", error);
+      } 
+    };
+
+    loadPicklists();
+  }, []);
+
 
   const handleMenuClick = () => {
     setIsSideNavOpen(true);
@@ -125,7 +133,7 @@ export const B2BPackingPage: React.FC = () => {
 
   // Filter and sort logic
   const filteredAndSortedItems = useMemo(() => {
-    let filtered = allPicklistItems;
+    let filtered = picklists;
 
     // Filter by picklist code search
     if (picklistCode.trim()) {
@@ -166,7 +174,7 @@ export const B2BPackingPage: React.FC = () => {
       const comparison = a.picklistCode.localeCompare(b.picklistCode);
       return sortOrder === "asc" ? comparison : -comparison;
     });
-  }, [allPicklistItems, picklistCode, filters, sortOrder]);
+  }, [picklists, picklistCode, filters, sortOrder]);
 
   return (
     <div className="bg-white min-h-screen w-full flex">
