@@ -57,9 +57,6 @@ export const PicklistDetailPage: React.FC = () => {
     fetchPendingShelves();
   }, [id]);
 
-  console.log("here is the data", pendingShelves[0]
-);
-
   const scannedShelves: ShelfItem[] = [];
 
   // Sample sections data

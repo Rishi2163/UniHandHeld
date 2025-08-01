@@ -6,6 +6,7 @@ import { ArrowLeft, X, Trash2, Camera } from "lucide-react"
 import { CameraCapture } from "@/components/CameraCapture"
 import { Button } from "@/components/ui/button"
 import { fetchSKUItemsFromShelf } from "@/services/api"
+ import { useMemo } from "react"
 
 interface Product {
   id: string
@@ -37,10 +38,11 @@ interface APIProduct {
 }
 
 export function SKUScannerPage() {
-  const searchParams = new URLSearchParams(window.location.search)
-  const shelfCode = searchParams.get("shelfCode")
-  const shelfStatus = searchParams.get("status") === "true"
-  const picklistId = searchParams.get("picklistId") || "1"
+ 
+
+const searchParams = useMemo(() => new URLSearchParams(window.location.search), [])
+const shelfCode = useMemo(() => searchParams.get("shelfCode"), [searchParams])
+const picklistId = useMemo(() => searchParams.get("picklistId") || "1", [searchParams])
   const [, navigate] = useLocation()
   const [activeTab, setActiveTab] = useState<"pending" | "scanned">("pending")
   const [products, setProducts] = useState<Product[]>([])
@@ -57,28 +59,29 @@ export function SKUScannerPage() {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
   const [cameraError, setCameraError] = useState<string>("")
   const [isScanning, setIsScanning] = useState(false)
+  const fetchedRef = useRef(false)
 
-  useEffect(() => {
-    const getProducts = async () => {
-      try {
-        const response = await fetchSKUItemsFromShelf(picklistId, shelfCode || "")
-        console.log("API Response:", response)
+useEffect(() => {
+  if (fetchedRef.current) return // skip if already fetched
+  fetchedRef.current = true
 
-        // Map API response to match our interface
-        const mappedProducts: Product[] = response[0].skuInputProducts.map((apiProduct: APIProduct) => ({
-          ...apiProduct,
-          totalQuantity: apiProduct.quantity, // ← Map 'quantity' to 'totalQuantity'
-          image: "/api/placeholder/60/60", // Add default image if not provided
-        }))
+  const getProducts = async () => {
+    try {
+      const response = await fetchSKUItemsFromShelf(picklistId, shelfCode || "")
+      console.log("Fetched products:", response)
 
-        console.log("Mapped Products:", mappedProducts)
-        setProducts(mappedProducts)
-      } catch (error) {
-        console.error("Error fetching products:", error)
-      }
+      const mappedProducts: Product[] = response[0].skuInputProducts.map((apiProduct: APIProduct) => ({
+        ...apiProduct,
+        totalQuantity: apiProduct.quantity,
+      }))
+      setProducts(mappedProducts)
+    } catch (error) {
+      console.error("Error fetching products:", error)
     }
-    getProducts()
-  }, [shelfCode, picklistId])
+  }
+
+  getProducts()
+}, [shelfCode, picklistId])
 
   // Camera functionality
   useEffect(() => {
@@ -125,7 +128,7 @@ export function SKUScannerPage() {
 
   const handleBack = () => {
     stopCamera()
-    navigate(`/shelf-detail/1?shelfCode=${shelfCode}&status=${shelfStatus}`)
+    navigate(`/shelf-detail/${picklistId}`)
   }
 
   const handleClose = () => {

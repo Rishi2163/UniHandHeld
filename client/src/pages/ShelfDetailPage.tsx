@@ -70,7 +70,6 @@ export const ShelfDetailPage: React.FC = () => {
     retrieveShelves();
   },[shelfCode,])
 
-  console.log("here is my data",mockShelfData)
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
