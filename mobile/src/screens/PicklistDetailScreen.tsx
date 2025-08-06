@@ -18,7 +18,7 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useBarcodeMode } from '../contexts/BarcodeModeContext';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'PicklistDetail'>;
-type RouteProp = RouteProp<RootStackParamList, 'PicklistDetail'>;
+type RouteProps = RouteProp<RootStackParamList, 'PicklistDetail'>;
 
 interface ShelfSection {
   id: string;
@@ -38,7 +38,7 @@ const mockShelves: ShelfSection[] = [
 
 export const PicklistDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp>();
+  const route = useRoute<RouteProps>();
   const { barcodeMode } = useBarcodeMode();
   const [showSectionDialog, setShowSectionDialog] = useState(false);
   const [sortAZ, setSortAZ] = useState(true);

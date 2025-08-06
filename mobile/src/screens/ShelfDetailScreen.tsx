@@ -15,7 +15,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'ShelfDetail'>;
-type RouteProp = RouteProp<RootStackParamList, 'ShelfDetail'>;
+type RouteProps = RouteProp<RootStackParamList, 'ShelfDetail'>;
 
 interface ShelfItem {
   id: string;
@@ -33,7 +33,7 @@ const mockShelfItems: ShelfItem[] = [
 
 export const ShelfDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp>();
+  const route = useRoute<RouteProps>();
 
   const { id } = route.params;
 

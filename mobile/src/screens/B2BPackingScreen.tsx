@@ -55,7 +55,7 @@ const mockPicklists: Picklist[] = [
   },
 ];
 
-const B2BPackingScreen: React.FC = () => {
+export const B2BPackingScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const { barcodeMode, setBarcodeMode } = useBarcodeMode();
   const [assignToMe, setAssignToMe] = useState(false);

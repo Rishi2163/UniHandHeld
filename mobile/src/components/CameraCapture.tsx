@@ -9,7 +9,7 @@ import {
   Dimensions,
   Image
 } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions, Camera } from 'expo-camera';
 
 interface CameraCaptureProps {
   onCapture?: (photoUri: string) => void;

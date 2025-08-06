@@ -16,7 +16,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'ShelfSelection'>;
-type RouteProp = RouteProp<RootStackParamList, 'ShelfSelection'>;
+type RouteProps = RouteProp<RootStackParamList, 'ShelfSelection'>;
 
 interface ShelfOption {
   id: string;
@@ -35,7 +35,7 @@ const mockShelves: ShelfOption[] = [
 
 export const ShelfSelectionScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp>();
+  const route = useRoute<RouteProps>();
   const [selectedShelf, setSelectedShelf] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
 

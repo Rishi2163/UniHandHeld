@@ -18,7 +18,7 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 import { SKUItem } from '../../shared/schema';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'SKUInput'>;
-type RouteProp = RouteProp<RootStackParamList, 'SKUInput'>;
+type RouteProps = RouteProp<RootStackParamList, 'SKUInput'>;
 
 const mockSKUItems: SKUItem[] = [
   {
@@ -51,7 +51,7 @@ const mockSKUItems: SKUItem[] = [
 
 export const SKUInputScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp>();
+  const route = useRoute<RouteProps>();
   const [items, setItems] = useState(mockSKUItems);
   const [skuInput, setSkuInput] = useState('');
   const [quantityInput, setQuantityInput] = useState('');

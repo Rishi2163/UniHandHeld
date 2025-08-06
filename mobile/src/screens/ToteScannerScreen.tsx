@@ -16,11 +16,11 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 import { CameraCapture } from '../components/CameraCapture';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'ToteScanner'>;
-type RouteProp = RouteProp<RootStackParamList, 'ToteScanner'>;
+type RouteProps = RouteProp<RootStackParamList, 'ToteScanner'>;
 
 export const ToteScannerScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp>();
+  const route = useRoute<RouteProps>();
   const [scannedData, setScannedData] = useState<string | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
 

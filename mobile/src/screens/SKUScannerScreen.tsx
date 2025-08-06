@@ -18,7 +18,7 @@ import { CameraCapture } from '../components/CameraCapture';
 import { SKUItem } from '../../shared/schema';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'SKUScanner'>;
-type RouteProp = RouteProp<RootStackParamList, 'SKUScanner'>;
+type RouteProps = RouteProp<RootStackParamList, 'SKUScanner'>;
 
 // Mock SKU data with realistic product information
 const mockSKUItems: SKUItem[] = [
@@ -65,7 +65,7 @@ const mockSKUItems: SKUItem[] = [
 
 export const SKUScannerScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  const route = useRoute<RouteProp>();
+  const route = useRoute<RouteProps>();
   const [items, setItems] = useState(mockSKUItems);
   const [activeTab, setActiveTab] = useState<'pending' | 'scanned'>('pending');
   const [showCamera, setShowCamera] = useState(true);

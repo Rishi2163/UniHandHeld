@@ -32,7 +32,7 @@ export const queryClient = new QueryClient({
 });
 
 // Default fetcher function for React Query
-export const defaultQueryFn = async ({ queryKey }: { queryKey: unknown[] }) => {
+export const defaultQueryFn = async ({ queryKey }: { queryKey: readonly unknown[] }) => {
   const url = queryKey[0] as string;
   if (!url) throw new Error('Query key must contain a URL');
   
