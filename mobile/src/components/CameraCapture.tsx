@@ -9,7 +9,7 @@ import {
   Dimensions,
   Image
 } from 'react-native';
-import { Camera } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 interface CameraCaptureProps {
   onCapture?: (photoUri: string) => void;
@@ -103,11 +103,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
         </View>
       ) : (
         <>
-          <Camera
+          <CameraView
             ref={cameraRef}
             style={styles.camera}
-            type={Camera.Constants?.Type?.back || 'back' as any}
-            onBarCodeScanned={mode === 'barcode' ? handleBarcodeScanned : undefined}
+            facing={'back'}
+            onBarcodeScanned={mode === 'barcode' ? handleBarcodeScanned : undefined}
           >
             {/* Scanning overlay */}
             <View style={styles.overlay}>
@@ -119,7 +119,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
               </View>
               <Text style={styles.overlayText}>{overlayText}</Text>
             </View>
-          </Camera>
+          </CameraView>
           
           {mode === 'photo' && (
             <TouchableOpacity style={styles.captureButton} onPress={takePicture}>

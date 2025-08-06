@@ -1,5 +1,5 @@
 // Landing/Welcome screen for the picking app
-import React from 'react';
+import * as React from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type NavigationProp = StackNavigationProp<RootStackParamList, 'PickingLanding'>;
 
-const PickingLandingScreen: React.FC = () => {
+export const PickingLandingScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
   const navigateToPicklists = () => {

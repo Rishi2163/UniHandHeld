@@ -18,7 +18,7 @@ import { CameraCapture } from '../components/CameraCapture';
 type NavigationProp = StackNavigationProp<RootStackParamList, 'ToteScanner'>;
 type RouteProp = RouteProp<RootStackParamList, 'ToteScanner'>;
 
-const ToteScannerScreen: React.FC = () => {
+export const ToteScannerScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp>();
   const [scannedData, setScannedData] = useState<string | null>(null);

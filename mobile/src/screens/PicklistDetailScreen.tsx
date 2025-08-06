@@ -36,7 +36,7 @@ const mockShelves: ShelfSection[] = [
   { id: '5', code: 'C3-001', level: 3, items: 2 },
 ];
 
-const PicklistDetailScreen: React.FC = () => {
+export const PicklistDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp>();
   const { barcodeMode } = useBarcodeMode();

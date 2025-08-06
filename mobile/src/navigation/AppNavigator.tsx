@@ -1,18 +1,18 @@
 // Main navigation setup for React Native app using React Navigation
-import React from 'react';
+import * as React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 // Import all the screens
-import PickingLandingScreen from '../screens/PickingLandingScreen';
-import B2BPackingScreen from '../screens/B2BPackingScreen';
-import PicklistDetailScreen from '../screens/PicklistDetailScreen';
-import ToteScannerScreen from '../screens/ToteScannerScreen';
-import ShelfDetailScreen from '../screens/ShelfDetailScreen';
-import SKUScannerScreen from '../screens/SKUScannerScreen';
-import ShelfSelectionScreen from '../screens/ShelfSelectionScreen';
-import SKUInputScreen from '../screens/SKUInputScreen';
+import { PickingLandingScreen } from '../screens/PickingLandingScreen';
+import { B2BPackingScreen } from '../screens/B2BPackingScreen';
+import { PicklistDetailScreen } from '../screens/PicklistDetailScreen';
+import { ToteScannerScreen } from '../screens/ToteScannerScreen';
+import { ShelfDetailScreen } from '../screens/ShelfDetailScreen';
+import { SKUScannerScreen } from '../screens/SKUScannerScreen';
+import { ShelfSelectionScreen } from '../screens/ShelfSelectionScreen';
+import { SKUInputScreen } from '../screens/SKUInputScreen';
 
 // Define the parameter list for type safety
 export type RootStackParamList = {

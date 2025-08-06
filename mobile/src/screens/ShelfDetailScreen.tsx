@@ -1,5 +1,5 @@
 // Shelf detail screen showing shelf information and items
-import React from 'react';
+import * as React from 'react';
 import {
   View,
   Text,
@@ -31,7 +31,7 @@ const mockShelfItems: ShelfItem[] = [
   { id: '3', name: 'Puma RS-X', quantity: 3, location: 'A1-003' },
 ];
 
-const ShelfDetailScreen: React.FC = () => {
+export const ShelfDetailScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp>();
 

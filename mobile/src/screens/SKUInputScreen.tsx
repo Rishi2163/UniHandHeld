@@ -49,7 +49,7 @@ const mockSKUItems: SKUItem[] = [
   }
 ];
 
-const SKUInputScreen: React.FC = () => {
+export const SKUInputScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp>();
   const [items, setItems] = useState(mockSKUItems);

@@ -33,7 +33,7 @@ const mockShelves: ShelfOption[] = [
   { id: '5', code: 'C3-001', description: 'Accessories - Level 3', items: 2 },
 ];
 
-const ShelfSelectionScreen: React.FC = () => {
+export const ShelfSelectionScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp>();
   const [selectedShelf, setSelectedShelf] = useState<string | null>(null);

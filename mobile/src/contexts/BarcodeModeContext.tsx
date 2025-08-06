@@ -1,5 +1,6 @@
 // Global context for managing barcode scanner mode vs manual input mode
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import * as React from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { BarcodeModeContextType } from '../../shared/schema';
 
 const BarcodeModeContext = createContext<BarcodeModeContextType | undefined>(undefined);
