@@ -1,0 +1,12 @@
+run = "npm start"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+publicDir = "/"
+deploymentTarget = "static"
+
+[[ports]]
+localPort = 8081
+externalPort = 80

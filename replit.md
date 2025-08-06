@@ -5,7 +5,7 @@ This is a mobile-first picking application migrated from Figma to Replit. The ap
 
 ## Project Architecture
 
-### Frontend
+### Web Frontend (client/)
 - **Framework**: React 18 with TypeScript
 - **Routing**: Wouter for client-side routing
 - **Styling**: Tailwind CSS with shadcn/ui components
@@ -13,11 +13,19 @@ This is a mobile-first picking application migrated from Figma to Replit. The ap
 - **UI Components**: Radix UI primitives with custom styling
 - **Theme**: Custom design system with Figma assets
 
-### Backend
+### Mobile Frontend (mobile/)
+- **Framework**: React Native with Expo SDK 53
+- **Routing**: React Navigation 7 with type-safe navigation
+- **Styling**: React Native StyleSheet with mobile-optimized components
+- **State Management**: TanStack Query for server state (same as web)
+- **Camera**: expo-camera for native barcode scanning
+- **UI**: Touch-optimized interface for warehouse operations
+
+### Backend (server/)
 - **Framework**: Express.js with TypeScript
 - **Database**: PostgreSQL with Drizzle ORM
 - **Development**: Vite dev server integration
-- **Port**: 5000 (serves both API and frontend)
+- **Port**: 5000 (serves both web and mobile APIs)
 
 ### Key Features
 - Mobile-first responsive design (412px width focus)
@@ -103,11 +111,25 @@ This is a mobile-first picking application migrated from Figma to Replit. The ap
 - **2025-01-29**: Created BarcodeModeContext for global state management of barcode mode toggle
 - **2025-01-29**: Updated routing logic: START PICKING routes to either camera flow or input flow based on toggle
 - **2025-01-29**: Enhanced application with two complete picking workflows: camera scanning vs manual input
+- **2025-08-06**: Successfully completed migration from Replit Agent to Replit environment
+- **2025-08-06**: Fixed port configuration to properly serve on port 5000
+- **2025-08-06**: Updated browser data and resolved dependency warnings
+- **2025-08-06**: Starting React Native migration using Expo SDK 48 per user request
+- **2025-08-06**: Successfully created React Native mobile app structure using Expo SDK 53
+- **2025-08-06**: Migrated all 8 core screens from web to React Native with full functionality
+- **2025-08-06**: Implemented native camera scanning with expo-camera for barcode detection
+- **2025-08-06**: Set up React Navigation with type-safe routing matching web app structure
+- **2025-08-06**: Preserved all business logic, state management, and API integration
+- **2025-08-06**: Created comprehensive mobile-optimized UI with touch interactions
+- **2025-08-06**: Configured React Query for API calls connecting to existing Express backend
 
 ## User Preferences
 - Mobile-first design approach
 - Clean, professional UI matching Figma specifications
 - Fast development iteration preferred
+- Migrate to React Native with Expo SDK 48 for mobile app deployment
+- Maintain all existing functionality and business logic during migration
+- Use Expo Go compatible libraries only (no ejecting)
 
 ## Development Setup
 - Run `npm run dev` to start development server
