@@ -702,12 +702,157 @@ export const B2BPackingPage: React.FC = () => {
 
         {/* Filter Modal */}
         {isFilterModalOpen && (
-          // Keep your existing modal JSX here as it was
-          // (not repeated here for brevity)
-          // You already have filters for SKU, TAT, Order, etc.
-          // Let me know if you want that updated too.
-          <></>
-        )}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+      {/* Header */}
+      <div className="flex justify-between items-center p-4 border-b border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-900">FILTERS</h2>
+        <button 
+          onClick={() => setIsFilterModalOpen(false)}
+          className="p-1 hover:bg-gray-100 rounded"
+        >
+          <X className="w-5 h-5 text-gray-600" />
+        </button>
+      </div>
+
+      {/* Filter Form */}
+      <div className="p-4 space-y-6">
+        {/* SKU */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">SKU</label>
+          <Select value={filters.sku} onValueChange={(value) => setFilters(prev => ({...prev, sku: value}))}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="SK001, SK002, SK003" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="SK001">SK001</SelectItem>
+              <SelectItem value="SK002">SK002</SelectItem>
+              <SelectItem value="SK003">SK003</SelectItem>
+              <SelectItem value="SK004">SK004</SelectItem>
+              <SelectItem value="SK005">SK005</SelectItem>
+              <SelectItem value="SK006">SK006</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Fulfilment TAT */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Fulfilment TAT</label>
+          <div className="relative">
+            <Input
+              value={filters.fulfillmentTAT}
+              onChange={(e) => setFilters(prev => ({...prev, fulfillmentTAT: e.target.value}))}
+              placeholder="18/02/2023 - 18/02/2023"
+              className="pr-10"
+            />
+            <Calendar className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2" />
+          </div>
+        </div>
+
+        {/* Order */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Order</label>
+          <Select value={filters.order} onValueChange={(value) => setFilters(prev => ({...prev, order: value}))}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Hint text" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ORD001">ORD001</SelectItem>
+              <SelectItem value="ORD002">ORD002</SelectItem>
+              <SelectItem value="ORD003">ORD003</SelectItem>
+              <SelectItem value="ORD004">ORD004</SelectItem>
+              <SelectItem value="ORD005">ORD005</SelectItem>
+              <SelectItem value="ORD006">ORD006</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Payment Method */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Payment Method</label>
+          <Select value={filters.paymentMethod} onValueChange={(value) => setFilters(prev => ({...prev, paymentMethod: value}))}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Hint text" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Credit Card">Credit Card</SelectItem>
+              <SelectItem value="Debit Card">Debit Card</SelectItem>
+              <SelectItem value="Cash">Cash</SelectItem>
+              <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+              <SelectItem value="PayPal">PayPal</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Quantity */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Quantity</label>
+          <Select value={filters.quantity} onValueChange={(value) => setFilters(prev => ({...prev, quantity: value}))}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Hint text" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0-25">0-25</SelectItem>
+              <SelectItem value="26-50">26-50</SelectItem>
+              <SelectItem value="51-100">51-100</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Customers */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Customers</label>
+          <Select value={filters.customers} onValueChange={(value) => setFilters(prev => ({...prev, customers: value}))}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Hint Text" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TechCorp Ltd">TechCorp Ltd</SelectItem>
+              <SelectItem value="ElectroMax">ElectroMax</SelectItem>
+              <SelectItem value="OfficeSupply Co">OfficeSupply Co</SelectItem>
+              <SelectItem value="Corporate Solutions">Corporate Solutions</SelectItem>
+              <SelectItem value="Mobile World">Mobile World</SelectItem>
+              <SelectItem value="Alpha Corp">Alpha Corp</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Channel */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Channel</label>
+          <Select value={filters.channel} onValueChange={(value) => setFilters(prev => ({...prev, channel: value}))}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Hint Text" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Online">Online</SelectItem>
+              <SelectItem value="Retail">Retail</SelectItem>
+              <SelectItem value="B2B">B2B</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Footer Buttons */}
+      <div className="flex justify-between items-center p-4 border-t border-gray-200">
+        <Button
+          variant="ghost"
+          onClick={handleClearAllFilters}
+          className="text-gray-600 hover:text-gray-800"
+        >
+          CLEAR ALL
+        </Button>
+        <Button
+          onClick={handleApplyFilters}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6"
+        >
+          APPLY
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
     </div>
   );

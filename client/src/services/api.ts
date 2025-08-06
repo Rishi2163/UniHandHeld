@@ -1,7 +1,7 @@
 // src/services/api.ts
 import axios from "axios";
 
-const apiUrl = "https://www.jsonkeeper.com/b/1ENXK"; // your mock data URL
+const apiUrl = "https://dummyjson.com/c/1e96-9cba-4ca2-b9d7"; // your mock data URL
 
 export const fetchAllPicklists = async () => {
   const response = await axios.get(apiUrl, {
