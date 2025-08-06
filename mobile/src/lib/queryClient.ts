@@ -3,7 +3,10 @@ import { QueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 // Configure axios for API calls to the web server
-const API_BASE_URL = 'http://localhost:5000'; // This will need to be updated for actual deployment
+// Use Replit's external URL for mobile access
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? 'https://' + (process.env.REPL_SLUG || 'your-repl-name') + '.' + (process.env.REPL_OWNER || 'username') + '.replit.dev'
+  : 'http://localhost:5000';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
