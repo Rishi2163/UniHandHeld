@@ -9,7 +9,7 @@ import {
   Dimensions,
   Image
 } from 'react-native';
-import { Camera, CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { Camera } from 'expo-camera';
 
 interface CameraCaptureProps {
   onCapture?: (photoUri: string) => void;
@@ -26,16 +26,17 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
   mode = 'barcode',
   overlayText = 'Position barcode in the center'
 }) => {
-  const [permission, requestPermission] = useCameraPermissions();
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
-  const cameraRef = useRef<CameraView>(null);
+  const cameraRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission();
-    }
-  }, [permission]);
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+    })();
+  }, []);
 
   const takePicture = async () => {
     if (cameraRef.current) {
@@ -67,7 +68,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
     }
   };
 
-  if (!permission) {
+  const requestPermission = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
+    setHasPermission(status === 'granted');
+  };
+
+  if (hasPermission === null) {
     return (
       <View style={styles.container}>
         <Text style={styles.message}>Requesting camera permission...</Text>
@@ -75,7 +81,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
     );
   }
 
-  if (!permission.granted) {
+  if (hasPermission === false) {
     return (
       <View style={styles.container}>
         <Text style={styles.message}>No access to camera</Text>
@@ -97,11 +103,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
         </View>
       ) : (
         <>
-          <CameraView
+          <Camera
             ref={cameraRef}
             style={styles.camera}
-            facing="back"
-            onBarcodeScanned={mode === 'barcode' ? handleBarcodeScanned : undefined}
+            type={Camera.Constants?.Type?.back || 'back' as any}
+            onBarCodeScanned={mode === 'barcode' ? handleBarcodeScanned : undefined}
           >
             {/* Scanning overlay */}
             <View style={styles.overlay}>
@@ -113,7 +119,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({
               </View>
               <Text style={styles.overlayText}>{overlayText}</Text>
             </View>
-          </CameraView>
+          </Camera>
           
           {mode === 'photo' && (
             <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
