@@ -1,0 +1,122 @@
+📦 Project Summary
+Migrate an existing React + TypeScript + Tailwind CSS web application to React Native using Expo SDK 48, without changing the business logic or UI flow.
+
+🎯 Objective
+Build a fully functional React Native app using Expo SDK 48 that replicates all features, routes, UI structure, and workflows of the current web application. Ensure it works inside Expo Go with zero native code changes.
+
+🔧 Current Tech Stack
+Frontend: React + TypeScript + Tailwind CSS
+
+Routing: Wouter
+
+State Management: TanStack Query
+
+Camera: Custom live preview for barcode scanning
+
+Backend: Express.js API with PostgreSQL (port 5000)
+
+Styling: Tailwind CSS (mobile-first design)
+
+📲 Migrate to:
+Expo SDK 48 (managed workflow)
+
+React Native + TypeScript
+
+@react-navigation/native for routing
+
+expo-camera for camera scanning
+
+nativewind or StyleSheet.create() for styling
+
+TanStack Query (React Query) for async data
+
+✅ Required Outcomes
+Fully functional mobile app, compatible with Expo Go
+
+All pages ported:
+
+/picking
+
+/picklists
+
+/picklist/:id
+
+/tote-scanner/:id
+
+/shelf-detail/:id
+
+/sku-scanner/:id
+
+Camera barcode scanning via expo-camera with:
+
+Live preview
+
+Overlay
+
+Photo capture/removal logic
+
+State and navigation should behave exactly as on the web app
+
+Fully working filter modals, tabs, buttons, toggles, and bulk picking
+
+⚠️ Known Issues to Fix During Migration
+❌ Too many dependency errors when launching in Expo Go
+
+Replace incompatible packages or remove unused ones
+
+Only use Expo SDK 48 compatible libraries
+
+❌ Infinite loading screen (app not booting)
+
+Caused by unresolved dependencies and incorrect entry points
+
+Debug and fix App.tsx structure and navigation setup
+
+❌ Skia dependency errors
+
+Remove Skia or disable any component using it unless absolutely necessary
+
+Prefer react-native-reanimated or expo-camera only
+
+❌ Wouter routing is web-only
+
+Replace with @react-navigation/native stack + tab navigation
+
+Maintain existing URL-based screen structure as route names
+
+❌ Tailwind CSS doesn’t work in RN
+
+Use nativewind as a drop-in Tailwind replacement
+
+Or fallback to StyleSheet.create for critical components
+
+❌ Camera not rendering in Expo Go
+
+Must use expo-camera with correct permissions and layout
+
+Debug camera mount timing and permissions handling
+
+📁 File & Code Migration Rules
+Keep folder structure and naming conventions the same
+
+Migrate all core logic from client/ and shared/ as-is
+
+Use TypeScript throughout
+
+Shared types and utilities should work in RN environment
+
+🧪 Post-Migration Checklist
+✅ App starts successfully inside Expo Go
+
+✅ All pages and routes work end-to-end
+
+✅ No crashing, infinite loops, or black screens
+
+✅ Camera opens, captures, and updates state
+
+✅ Filters, tabs, modals, and buttons work
+
+✅ Data is fetched and mutated correctly
+
+✅ App builds without ejecting from Expo
+
