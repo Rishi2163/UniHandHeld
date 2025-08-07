@@ -1,4 +1,5 @@
 // Individual picklist detail screen showing shelf locations and items
+// Individual picklist detail screen showing shelf locations and items
 import React, { useState } from 'react';
 import {
   View,
@@ -23,17 +24,16 @@ type RouteProps = RouteProp<RootStackParamList, 'PicklistDetail'>;
 interface ShelfSection {
   id: string;
   code: string;
-  level: number;
-  items: number;
+  skuCount: number;
+  pendingQty: number;
+  status: 'pending' | 'scanned';
 }
 
 // Mock shelf data
 const mockShelves: ShelfSection[] = [
-  { id: '1', code: 'A1-001', level: 1, items: 3 },
-  { id: '2', code: 'A1-002', level: 1, items: 2 },
-  { id: '3', code: 'B2-001', level: 2, items: 4 },
-  { id: '4', code: 'B2-002', level: 2, items: 1 },
-  { id: '5', code: 'C3-001', level: 3, items: 2 },
+  { id: '1', code: 'SHELF_001', skuCount: 5, pendingQty: 120, status: 'pending' },
+  { id: '2', code: 'SHELF_002', skuCount: 3, pendingQty: 80, status: 'pending' },
+  { id: '3', code: 'SHELF_003', skuCount: 2, pendingQty: 45, status: 'scanned' },
 ];
 
 export const PicklistDetailScreen: React.FC = () => {
@@ -41,10 +41,15 @@ export const PicklistDetailScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const { barcodeMode } = useBarcodeMode();
   const [showSectionDialog, setShowSectionDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<'pending' | 'scanned'>('pending');
   const [sortAZ, setSortAZ] = useState(true);
-  const [shelves, setShelves] = useState(mockShelves);
+  const [shelves] = useState(mockShelves);
 
   const { id } = route.params;
+
+  const pendingShelves = shelves.filter(shelf => shelf.status === 'pending');
+  const scannedShelves = shelves.filter(shelf => shelf.status === 'scanned');
+  const displayShelves = activeTab === 'pending' ? pendingShelves : scannedShelves;
 
   const handleStartPicking = () => {
     if (barcodeMode) {
@@ -66,22 +71,23 @@ export const PicklistDetailScreen: React.FC = () => {
   };
 
   const toggleSort = () => {
-    setSortAZ(!sortAZ);
-    const sorted = [...shelves].sort((a, b) => {
-      return sortAZ 
-        ? b.code.localeCompare(a.code)
-        : a.code.localeCompare(b.code);
-    });
-    setShelves(sorted);
+    // Sort functionality can be implemented here if needed
   };
 
   const renderShelfItem = ({ item }: { item: ShelfSection }) => (
     <View style={styles.shelfCard}>
-      <View style={styles.shelfHeader}>
-        <Text style={styles.shelfCode}>{item.code}</Text>
-        <Text style={styles.shelfLevel}>Level {item.level}</Text>
+      <Text style={styles.shelfCode}>{item.code}</Text>
+      
+      <View style={styles.shelfStats}>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>SKU Count</Text>
+          <Text style={styles.statValue}>{item.skuCount}</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Pending Qty</Text>
+          <Text style={styles.statValue}>{item.pendingQty}</Text>
+        </View>
       </View>
-      <Text style={styles.shelfItems}>{item.items} items</Text>
     </View>
   );
 
@@ -91,43 +97,59 @@ export const PicklistDetailScreen: React.FC = () => {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Back</Text>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity style={styles.hamburgerButton}>
+            <View style={styles.hamburgerLine} />
+            <View style={styles.hamburgerLine} />
+            <View style={styles.hamburgerLine} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Text style={styles.backArrow}>←</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <Text style={styles.title}>PL{id}-WH</Text>
+        
+        <TouchableOpacity style={styles.menuButton}>
+          <Text style={styles.menuDots}>⋮</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Picklist {id}</Text>
-        <View style={styles.placeholder} />
       </View>
 
-      {/* Barcode Info */}
-      <View style={styles.barcodeSection}>
-        <Text style={styles.barcodeLabel}>Barcode: {id}</Text>
-        <Text style={styles.modeLabel}>
-          Mode: {barcodeMode ? 'Scanner' : 'Manual Input'}
-        </Text>
-      </View>
-
-      {/* Section Controls */}
-      <View style={styles.controls}>
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
         <TouchableOpacity 
-          style={styles.sectionButton}
-          onPress={handleSectionPress}
+          style={[styles.tab, activeTab === 'pending' && styles.activeTab]}
+          onPress={() => setActiveTab('pending')}
         >
-          <Text style={styles.sectionButtonText}>Select Section</Text>
+          <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>
+            Pending Shelf ({pendingShelves.length})
+          </Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
-          style={styles.sortButton}
-          onPress={toggleSort}
+          style={[styles.tab, activeTab === 'scanned' && styles.activeTab]}
+          onPress={() => setActiveTab('scanned')}
         >
-          <Text style={styles.sortButtonText}>
-            {sortAZ ? 'A-Z' : 'Z-A'}
+          <Text style={[styles.tabText, activeTab === 'scanned' && styles.activeTabText]}>
+            Scanned Shelf ({scannedShelves.length})
           </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Section Controls */}
+      <View style={styles.sectionControls}>
+        <TouchableOpacity onPress={handleSectionPress}>
+          <Text style={styles.sectionLabel}>SECTION</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity onPress={toggleSort}>
+          <Text style={styles.shelfCodeSort}>Shelf Code A-Z</Text>
         </TouchableOpacity>
       </View>
 
       {/* Shelves List */}
       <FlatList
-        data={shelves}
+        data={displayShelves}
         renderItem={renderShelfItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
@@ -148,7 +170,6 @@ export const PicklistDetailScreen: React.FC = () => {
       <Modal
         visible={showSectionDialog}
         animationType="slide"
-        presentationStyle="pageSheet"
         transparent={true}
       >
         <View style={styles.modalOverlay}>
@@ -194,49 +215,79 @@ export const PicklistDetailScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#f5f5f5',
   },
   header: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  hamburgerButton: {
+    width: 24,
+    height: 24,
+    justifyContent: 'space-between',
+    marginRight: 16,
+  },
+  hamburgerLine: {
+    width: 24,
+    height: 3,
+    backgroundColor: '#000000',
+    borderRadius: 2,
+  },
   backButton: {
-    fontSize: 16,
-    color: '#2563eb',
-    fontWeight: '600',
+    marginRight: 8,
+  },
+  backArrow: {
+    fontSize: 24,
+    color: '#000000',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#1f2937',
   },
-  placeholder: {
-    width: 50,
+  menuButton: {
+    padding: 8,
   },
-  barcodeSection: {
+  menuDots: {
+    fontSize: 20,
+    color: '#000000',
+  },
+  tabsContainer: {
     backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
-  barcodeLabel: {
+  tab: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomColor: '#2563eb',
+  },
+  tabText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 4,
-  },
-  modeLabel: {
-    fontSize: 14,
     color: '#6b7280',
+    fontWeight: '500',
   },
-  controls: {
+  activeTabText: {
+    color: '#2563eb',
+    fontWeight: '600',
+  },
+  sectionControls: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -246,26 +297,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
-  sectionButton: {
-    backgroundColor: '#e5e7eb',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  sectionButtonText: {
+  sectionLabel: {
     fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
+    color: '#6b7280',
+    fontWeight: '600',
   },
-  sortButton: {
-    backgroundColor: '#e5e7eb',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  sortButtonText: {
+  shelfCodeSort: {
     fontSize: 14,
-    color: '#374151',
+    color: '#6b7280',
     fontWeight: '500',
   },
   listContainer: {
@@ -282,24 +321,28 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  shelfHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
   shelfCode: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1f2937',
+    marginBottom: 16,
   },
-  shelfLevel: {
+  shelfStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  statItem: {
+    flex: 1,
+  },
+  statLabel: {
     fontSize: 14,
     color: '#6b7280',
+    marginBottom: 4,
   },
-  shelfItems: {
-    fontSize: 14,
-    color: '#9ca3af',
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
   },
   bottomSection: {
     backgroundColor: '#ffffff',

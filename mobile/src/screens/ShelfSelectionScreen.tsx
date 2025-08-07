@@ -1,4 +1,5 @@
 // Manual shelf selection screen (input mode when barcode is OFF)
+// Manual shelf selection screen (input mode when barcode is OFF)
 import React, { useState } from 'react';
 import {
   View,
@@ -22,15 +23,15 @@ interface ShelfOption {
   id: string;
   code: string;
   description: string;
-  items: number;
+  skuCount: number;
+  pendingQty: number;
+  status: 'pending' | 'scanned';
 }
 
 const mockShelves: ShelfOption[] = [
-  { id: '1', code: 'A1-001', description: 'Athletic Shoes - Level 1', items: 3 },
-  { id: '2', code: 'A1-002', description: 'Athletic Shoes - Level 1', items: 2 },
-  { id: '3', code: 'B2-001', description: 'Casual Wear - Level 2', items: 4 },
-  { id: '4', code: 'B2-002', description: 'Casual Wear - Level 2', items: 1 },
-  { id: '5', code: 'C3-001', description: 'Accessories - Level 3', items: 2 },
+  { id: '1', code: 'SHELF_001', description: 'Athletic Shoes - Level 1', skuCount: 5, pendingQty: 120, status: 'pending' },
+  { id: '2', code: 'SHELF_002', description: 'Casual Wear - Level 2', skuCount: 3, pendingQty: 80, status: 'pending' },
+  { id: '3', code: 'SHELF_003', description: 'Accessories - Level 3', skuCount: 2, pendingQty: 45, status: 'scanned' },
 ];
 
 export const ShelfSelectionScreen: React.FC = () => {
@@ -38,37 +39,42 @@ export const ShelfSelectionScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const [selectedShelf, setSelectedShelf] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
+  const [activeTab, setActiveTab] = useState<'pending' | 'scanned'>('pending');
 
   const { id } = route.params;
 
-  const filteredShelves = mockShelves.filter(shelf =>
+  const pendingShelves = mockShelves.filter(shelf => shelf.status === 'pending');
+  const scannedShelves = mockShelves.filter(shelf => shelf.status === 'scanned');
+  const displayShelves = activeTab === 'pending' ? pendingShelves : scannedShelves;
+
+  const filteredShelves = displayShelves.filter(shelf =>
     shelf.code.toLowerCase().includes(searchText.toLowerCase()) ||
     shelf.description.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const handleShelfSelect = (shelfCode: string) => {
     setSelectedShelf(shelfCode);
-  };
-
-  const handleContinue = () => {
-    if (selectedShelf) {
-      navigation.navigate('SKUInput', { id, shelfCode: selectedShelf });
-    }
+    // Navigate immediately when shelf is selected
+    navigation.navigate('SKUInput', { id, shelfCode });
   };
 
   const renderShelfItem = ({ item }: { item: ShelfOption }) => (
     <TouchableOpacity 
-      style={[
-        styles.shelfCard,
-        selectedShelf === item.code && styles.selectedShelfCard
-      ]}
+      style={styles.shelfCard}
       onPress={() => handleShelfSelect(item.code)}
     >
-      <View style={styles.shelfHeader}>
-        <Text style={styles.shelfCode}>{item.code}</Text>
-        <Text style={styles.itemCount}>{item.items} items</Text>
+      <Text style={styles.shelfCode}>{item.code}</Text>
+      
+      <View style={styles.shelfStats}>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>SKU Count</Text>
+          <Text style={styles.statValue}>{item.skuCount}</Text>
+        </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statLabel}>Pending Qty</Text>
+          <Text style={styles.statValue}>{item.pendingQty}</Text>
+        </View>
       </View>
-      <Text style={styles.shelfDescription}>{item.description}</Text>
     </TouchableOpacity>
   );
 
@@ -79,27 +85,66 @@ export const ShelfSelectionScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Back</Text>
+          <Text style={styles.backButton}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Select Shelf</Text>
+        <Text style={styles.title}>PKPL{id}-WH</Text>
         <View style={styles.placeholder} />
       </View>
 
       {/* Search */}
       <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search shelf code or description..."
-          value={searchText}
-          onChangeText={setSearchText}
-        />
+        <View style={styles.searchInputContainer}>
+          <Text style={styles.searchIcon}>🔍</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Scan Shelf Code"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+        </View>
       </View>
 
-      {/* Instructions */}
-      <View style={styles.instructions}>
-        <Text style={styles.instructionText}>
-          Select a shelf to continue with manual picking
-        </Text>
+      {/* Tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'pending' && styles.activeTab]}
+          onPress={() => setActiveTab('pending')}
+        >
+          <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>
+            Pending Shelf
+          </Text>
+          <View style={[styles.tabBadge, activeTab === 'pending' && styles.activeTabBadge]}>
+            <Text style={[styles.tabBadgeText, activeTab === 'pending' && styles.activeTabBadgeText]}>
+              {pendingShelves.length}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'scanned' && styles.activeTab]}
+          onPress={() => setActiveTab('scanned')}
+        >
+          <Text style={[styles.tabText, activeTab === 'scanned' && styles.activeTabText]}>
+            Scanned Shelf
+          </Text>
+          <View style={[styles.tabBadge, activeTab === 'scanned' && styles.activeTabBadge]}>
+            <Text style={[styles.tabBadgeText, activeTab === 'scanned' && styles.activeTabBadgeText]}>
+              {scannedShelves.length}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      {/* Filters Section */}
+      <View style={styles.filtersSection}>
+        <View style={styles.filtersLeft}>
+          <Text style={styles.filterIcon}>⚒</Text>
+          <Text style={styles.filtersText}>FILTERS</Text>
+        </View>
+        <View style={styles.filtersRight}>
+          <Text style={styles.picklistCode}>Picklist Code</Text>
+          <Text style={styles.dropdownIcon}>⌄</Text>
+        </View>
       </View>
 
       {/* Shelf List */}
@@ -110,25 +155,6 @@ export const ShelfSelectionScreen: React.FC = () => {
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
-
-      {/* Continue Button */}
-      <View style={styles.bottomSection}>
-        <TouchableOpacity 
-          style={[
-            styles.continueButton,
-            !selectedShelf && styles.disabledButton
-          ]}
-          onPress={handleContinue}
-          disabled={!selectedShelf}
-        >
-          <Text style={[
-            styles.continueButtonText,
-            !selectedShelf && styles.disabledButtonText
-          ]}>
-            Continue to SKU Input
-          </Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 };
@@ -149,8 +175,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e5e7eb',
   },
   backButton: {
-    fontSize: 16,
-    color: '#2563eb',
+    fontSize: 24,
+    color: '#000000',
     fontWeight: '600',
   },
   title: {
@@ -159,31 +185,118 @@ const styles = StyleSheet.create({
     color: '#1f2937',
   },
   placeholder: {
-    width: 50,
+    width: 24,
   },
   searchContainer: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
     paddingVertical: 16,
-  },
-  searchInput: {
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    fontSize: 16,
-  },
-  instructions: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
-  instructionText: {
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
+    color: '#6b7280',
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  tabsContainer: {
+    backgroundColor: '#ffffff',
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+    gap: 8,
+  },
+  activeTab: {
+    borderBottomColor: '#2563eb',
+  },
+  tabText: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: '#2563eb',
+    fontWeight: '600',
+  },
+  tabBadge: {
+    backgroundColor: '#e5e7eb',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  activeTabBadge: {
+    backgroundColor: '#2563eb',
+  },
+  tabBadgeText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '600',
+  },
+  activeTabBadgeText: {
+    color: '#ffffff',
+  },
+  filtersSection: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  filtersLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  filterIcon: {
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  filtersText: {
     fontSize: 14,
     color: '#6b7280',
-    textAlign: 'center',
+    fontWeight: '600',
+  },
+  filtersRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  picklistCode: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  dropdownIcon: {
+    fontSize: 16,
+    color: '#6b7280',
   },
   listContainer: {
     padding: 16,
@@ -193,7 +306,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#e5e7eb',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -201,55 +314,27 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  selectedShelfCard: {
-    borderColor: '#2563eb',
-    backgroundColor: '#eff6ff',
-  },
-  shelfHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
   shelfCode: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1f2937',
+    marginBottom: 16,
   },
-  itemCount: {
+  shelfStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  statItem: {
+    flex: 1,
+  },
+  statLabel: {
     fontSize: 14,
     color: '#6b7280',
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    marginBottom: 4,
   },
-  shelfDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  bottomSection: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  continueButton: {
-    backgroundColor: '#2563eb',
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  disabledButton: {
-    backgroundColor: '#e5e7eb',
-  },
-  continueButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
+  statValue: {
+    fontSize: 24,
     fontWeight: 'bold',
-  },
-  disabledButtonText: {
-    color: '#9ca3af',
+    color: '#1f2937',
   },
 });

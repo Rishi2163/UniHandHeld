@@ -22,29 +22,29 @@ type RouteProps = RouteProp<RootStackParamList, 'SKUInput'>;
 
 const mockSKUItems: SKUItem[] = [
   {
-    id: 'NK001',
-    name: 'Nike Air Max 90',
+    id: 'SK238402-437493023012',
+    name: 'Nike Shoes-Red-Size10-Mens Revolution 6 Nn-Sports Shoes-Men...',
     brand: 'Nike',
-    color: 'White/Black',
+    color: 'Red',
     size: '10',
-    quantity: 2,
+    quantity: 20,
     scannedQuantity: 0,
     batchNumber: 'NK-2024-001',
     expiryDate: '2025-12-31',
-    cost: 129.99,
+    cost: 1000,
     shelfLocation: 'A1-001'
   },
   {
-    id: 'AD002',
-    name: 'Adidas Ultraboost 22',
-    brand: 'Adidas',
-    color: 'Core Black',
-    size: '9',
-    quantity: 1,
+    id: 'SK238402-437493023013',
+    name: 'Nike Shoes-Blue-Size10-Mens Revolution 6 Nn-Sports Shoes-Men...',
+    brand: 'Nike',
+    color: 'Blue',
+    size: '10',
+    quantity: 30,
     scannedQuantity: 0,
     batchNumber: 'AD-2024-002',
     expiryDate: '2025-11-30',
-    cost: 189.99,
+    cost: 1000,
     shelfLocation: 'A1-002'
   }
 ];
@@ -54,9 +54,12 @@ export const SKUInputScreen: React.FC = () => {
   const route = useRoute<RouteProps>();
   const [items, setItems] = useState(mockSKUItems);
   const [skuInput, setSkuInput] = useState('');
-  const [quantityInput, setQuantityInput] = useState('');
+  const [activeTab, setActiveTab] = useState<'pending' | 'scanned'>('pending');
 
   const { id, shelfCode } = route.params;
+
+  const pendingItems = items.filter(item => item.scannedQuantity < item.quantity);
+  const scannedItems = items.filter(item => item.scannedQuantity > 0);
 
   const handleSKUInput = () => {
     if (!skuInput.trim()) {
@@ -64,36 +67,43 @@ export const SKUInputScreen: React.FC = () => {
       return;
     }
 
-    const quantity = parseInt(quantityInput) || 1;
     const foundItem = items.find(item => 
       item.id.toLowerCase() === skuInput.toLowerCase()
     );
 
-    if (foundItem) {
+    if (foundItem && foundItem.scannedQuantity < foundItem.quantity) {
       const updatedItems = items.map(item => {
         if (item.id === foundItem.id) {
-          const newScannedQuantity = Math.min(
-            item.quantity, 
-            item.scannedQuantity + quantity
-          );
-          return { ...item, scannedQuantity: newScannedQuantity };
+          return { ...item, scannedQuantity: item.scannedQuantity + 1 };
         }
         return item;
       });
       
       setItems(updatedItems);
       setSkuInput('');
-      setQuantityInput('');
       
-      Alert.alert('Success', `Added ${quantity} of ${foundItem.name}`);
+      Alert.alert('Success', `Added 1 of ${foundItem.name}`);
+    } else if (foundItem) {
+      Alert.alert('Error', 'Item already fully picked');
     } else {
       Alert.alert('Error', 'SKU not found in this shelf');
     }
   };
 
-  const handleItemPress = (item: SKUItem) => {
+  const handlePickItem = (item: SKUItem) => {
+    if (item.scannedQuantity < item.quantity) {
+      const updatedItems = items.map(i => {
+        if (i.id === item.id) {
+          return { ...i, scannedQuantity: i.scannedQuantity + 1 };
+        }
+        return i;
+      });
+      setItems(updatedItems);
+    }
+  };
+
+  const handleUnpickItem = (item: SKUItem) => {
     if (item.scannedQuantity > 0) {
-      // Remove one unit
       const updatedItems = items.map(i => {
         if (i.id === item.id) {
           return { ...i, scannedQuantity: Math.max(0, i.scannedQuantity - 1) };
@@ -104,50 +114,67 @@ export const SKUInputScreen: React.FC = () => {
     }
   };
 
-  const handleComplete = () => {
-    const allCompleted = items.every(item => item.scannedQuantity >= item.quantity);
-    
-    if (allCompleted) {
-      Alert.alert(
-        'Picking Complete',
-        'All items have been picked!',
-        [{ text: 'OK', onPress: () => navigation.navigate('PicklistDetail', { id }) }]
-      );
-    } else {
-      Alert.alert('Warning', 'Not all items have been picked. Continue anyway?', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Continue', onPress: () => navigation.navigate('PicklistDetail', { id }) }
-      ]);
-    }
-  };
-
   const renderSKUItem = ({ item }: { item: SKUItem }) => {
-    const isCompleted = item.scannedQuantity >= item.quantity;
+    const isPending = activeTab === 'pending';
+    const showInPending = item.scannedQuantity < item.quantity;
+    const showInScanned = item.scannedQuantity > 0;
     
+    if (isPending && !showInPending) return null;
+    if (!isPending && !showInScanned) return null;
+
     return (
-      <TouchableOpacity 
-        style={[styles.skuCard, isCompleted && styles.completedCard]}
-        onPress={() => handleItemPress(item)}
-      >
+      <View style={styles.skuCard}>
         <View style={styles.skuHeader}>
-          <View style={styles.skuInfo}>
-            <Text style={styles.skuCode}>{item.id}</Text>
-            <Text style={styles.skuName}>{item.name}</Text>
-            <Text style={styles.skuDetails}>
-              {item.brand} • {item.color} • Size {item.size}
-            </Text>
+          <View style={styles.productImageContainer}>
+            <View style={[styles.productImage, { backgroundColor: item.color === 'Red' ? '#ef4444' : '#3b82f6' }]}>
+              <Text style={styles.brandText}>NIKE</Text>
+            </View>
           </View>
           
-          <View style={styles.quantitySection}>
-            <Text style={[
-              styles.quantityText,
-              isCompleted && styles.completedText
-            ]}>
-              {item.scannedQuantity}/{item.quantity}
-            </Text>
+          <View style={styles.skuInfo}>
+            <Text style={styles.skuName} numberOfLines={2}>{item.name}</Text>
+            <Text style={styles.skuCode}>{item.id}</Text>
+            
+            <View style={styles.itemDetails}>
+              <Text style={styles.quantityLabel}>
+                Qty {isPending ? item.quantity - item.scannedQuantity : item.scannedQuantity}
+                {!isPending && (
+                  <Text style={styles.unpickText}> (click to unpick)</Text>
+                )}
+              </Text>
+              <Text style={styles.vendorText}>Vendor B02363940</Text>
+            </View>
+            
+            <View style={styles.bottomRow}>
+              <View style={styles.statusBadge}>
+                <Text style={styles.statusText}>GOOD</Text>
+              </View>
+              <Text style={styles.priceText}>MRP ₹{item.cost.toLocaleString()}</Text>
+            </View>
+            
+            <Text style={styles.mfgText}>Mfg 12/03/23</Text>
           </View>
         </View>
-      </TouchableOpacity>
+        
+        {isPending && (
+          <TouchableOpacity 
+            style={styles.pickButton}
+            onPress={() => handlePickItem(item)}
+            disabled={item.scannedQuantity >= item.quantity}
+          >
+            <Text style={styles.pickButtonText}>Pick Item</Text>
+          </TouchableOpacity>
+        )}
+
+        {!isPending && (
+          <TouchableOpacity 
+            style={styles.unpickArea}
+            onPress={() => handleUnpickItem(item)}
+          >
+            <View style={styles.invisibleButton} />
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
@@ -158,71 +185,73 @@ export const SKUInputScreen: React.FC = () => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Back</Text>
+          <Text style={styles.backButton}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>SKU Input</Text>
-        <View style={styles.placeholder} />
+        <Text style={styles.title}>{shelfCode}</Text>
+        <TouchableOpacity>
+          <Text style={styles.closeButton}>CLOSE</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Shelf Info */}
-      <View style={styles.shelfInfo}>
-        <Text style={styles.shelfLabel}>Shelf: {shelfCode}</Text>
-        <Text style={styles.modeLabel}>Manual Input Mode</Text>
-      </View>
-
-      {/* Input Section */}
-      <View style={styles.inputSection}>
-        <View style={styles.inputRow}>
+      {/* Search Input */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputContainer}>
+          <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
-            style={[styles.input, styles.skuInputField]}
-            placeholder="Enter SKU code..."
+            style={styles.searchInput}
+            placeholder="Scan SKU Code"
             value={skuInput}
             onChangeText={setSkuInput}
             autoCapitalize="characters"
           />
-          <TextInput
-            style={[styles.input, styles.quantityInputField]}
-            placeholder="Qty"
-            value={quantityInput}
-            onChangeText={setQuantityInput}
-            keyboardType="numeric"
-          />
         </View>
-        
         <TouchableOpacity 
           style={styles.addButton}
           onPress={handleSKUInput}
         >
-          <Text style={styles.addButtonText}>Add Item</Text>
+          <Text style={styles.addButtonText}>Add</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Tabs */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'pending' && styles.activeTab]}
+          onPress={() => setActiveTab('pending')}
+        >
+          <Text style={[styles.tabText, activeTab === 'pending' && styles.activeTabText]}>
+            Pending
+          </Text>
+          <View style={[styles.tabBadge, activeTab === 'pending' && styles.activeTabBadge]}>
+            <Text style={[styles.tabBadgeText, activeTab === 'pending' && styles.activeTabBadgeText]}>
+              {pendingItems.length}
+            </Text>
+          </View>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'scanned' && styles.activeTab]}
+          onPress={() => setActiveTab('scanned')}
+        >
+          <Text style={[styles.tabText, activeTab === 'scanned' && styles.activeTabText]}>
+            Scanned
+          </Text>
+          <View style={[styles.tabBadge, activeTab === 'scanned' && styles.activeTabBadge]}>
+            <Text style={[styles.tabBadgeText, activeTab === 'scanned' && styles.activeTabBadgeText]}>
+              {scannedItems.filter(item => item.scannedQuantity > 0).length}
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
 
       {/* Items List */}
-      <View style={styles.listSection}>
-        <Text style={styles.sectionTitle}>
-          Items in {shelfCode} ({items.length} total)
-        </Text>
-        
-        <FlatList
-          data={items}
-          renderItem={renderSKUItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
-
-      {/* Complete Button */}
-      <View style={styles.bottomSection}>
-        <TouchableOpacity 
-          style={styles.completeButton}
-          onPress={handleComplete}
-        >
-          <Text style={styles.completeButtonText}>
-            Complete Shelf Picking
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <FlatList
+        data={activeTab === 'pending' ? pendingItems : scannedItems}
+        renderItem={renderSKUItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 };
@@ -243,8 +272,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e5e7eb',
   },
   backButton: {
-    fontSize: 16,
-    color: '#2563eb',
+    fontSize: 24,
+    color: '#000000',
     fontWeight: '600',
   },
   title: {
@@ -252,143 +281,213 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
   },
-  placeholder: {
-    width: 50,
+  closeButton: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontWeight: '600',
   },
-  shelfInfo: {
+  searchContainer: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
-  shelfLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 4,
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
-  modeLabel: {
-    fontSize: 14,
+  searchIcon: {
+    fontSize: 16,
+    marginRight: 8,
     color: '#6b7280',
   },
-  inputSection: {
-    backgroundColor: '#ffffff',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  inputRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  input: {
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    fontSize: 16,
-  },
-  skuInputField: {
+  searchInput: {
     flex: 1,
-  },
-  quantityInputField: {
-    width: 80,
+    fontSize: 16,
+    color: '#6b7280',
   },
   addButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: '#1f2937',
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
   },
   addButtonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
   },
-  listSection: {
-    flex: 1,
+  tabContainer: {
     backgroundColor: '#ffffff',
-    marginTop: 8,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
+    flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+    gap: 8,
+  },
+  activeTab: {
+    borderBottomColor: '#2563eb',
+  },
+  tabText: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: '#2563eb',
+    fontWeight: '600',
+  },
+  tabBadge: {
+    backgroundColor: '#e5e7eb',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  activeTabBadge: {
+    backgroundColor: '#2563eb',
+  },
+  tabBadgeText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontWeight: '600',
+  },
+  activeTabBadgeText: {
+    color: '#ffffff',
   },
   listContainer: {
     padding: 16,
   },
   skuCard: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: '#ffffff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-  },
-  completedCard: {
-    backgroundColor: '#f0fdf4',
-    borderColor: '#22c55e',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    position: 'relative',
   },
   skuHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  productImageContainer: {
+    marginRight: 12,
+  },
+  productImage: {
+    width: 60,
+    height: 40,
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  brandText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   skuInfo: {
     flex: 1,
   },
-  skuCode: {
+  skuName: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#1f2937',
     marginBottom: 4,
   },
-  skuName: {
+  skuCode: {
     fontSize: 14,
-    color: '#374151',
-    marginBottom: 2,
+    color: '#6b7280',
+    marginBottom: 8,
   },
-  skuDetails: {
+  itemDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  quantityLabel: {
+    fontSize: 14,
+    color: '#1f2937',
+    fontWeight: '600',
+  },
+  unpickText: {
+    color: '#2563eb',
+    fontWeight: 'normal',
+  },
+  vendorText: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  statusBadge: {
+    backgroundColor: '#22c55e',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  statusText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  priceText: {
+    fontSize: 14,
+    color: '#1f2937',
+    fontWeight: '600',
+  },
+  mfgText: {
     fontSize: 12,
     color: '#6b7280',
   },
-  quantitySection: {
-    backgroundColor: '#e5e7eb',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  pickButton: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 12,
     borderRadius: 6,
-  },
-  quantityText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#374151',
-  },
-  completedText: {
-    color: '#22c55e',
-  },
-  bottomSection: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  completeButton: {
-    backgroundColor: '#22c55e',
-    paddingVertical: 16,
-    borderRadius: 8,
     alignItems: 'center',
   },
-  completeButtonText: {
+  pickButtonText: {
     color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  unpickArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  invisibleButton: {
+    flex: 1,
   },
 });
